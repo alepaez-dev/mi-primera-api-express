@@ -20,11 +20,11 @@ app.get("/", (req, res) => {
  */
 
 app.get("/koders", async (req, res) => {
-  const db = await fsPromises.readFile("./koders.json", "utf8");
-  const parsedDB = JSON.parse(db);
+  const db = await fsPromises.readFile("./koders.json", "utf8"); // leemos base de datos
+  const parsedDB = JSON.parse(db); // parseamos json
   console.log("DB no parseada", db);
   console.log("DB si parseada", parsedDB);
-  res.json(parsedDB);
+  res.json(parsedDB); // respondemos con header de Content-Type -> application/json
 })
 
 app.listen(8080, () => {
