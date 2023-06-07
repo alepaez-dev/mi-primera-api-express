@@ -42,8 +42,8 @@
         },
         {
             "id": 3,
-            "name": "Daniel Flores",
-            "age": "22",
+            "name": "Daniel",
+            "age": "25",
             "module": "Javascript",
             "generation": "25Js"
         },

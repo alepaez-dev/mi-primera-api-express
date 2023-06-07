@@ -110,9 +110,6 @@ app.post("/koders", async (req, res) => {
     // Response al cliente con nuestro objeto creado,  por si lo llega a necesitar
     res.json(koder)
 })
-app.listen(8080, () => {
-    console.log("Nuestro servidor esta prendido");
-});
 
 
 
@@ -121,8 +118,45 @@ app.listen(8080, () => {
  * 1 endpoint
  * Quiero actualizar un koder
  * 
- * method
- * ruta
+ * method (PUT, PATCH)
+ * ruta /koders/:id
  * metodos recomendados
  * -> findIndex, find
+ */
+
+app.patch("/koders/:id", async (req, res) => {
+  // Parametros
+  const { id } = req.params;
+
+  // Acceder a nuestra base de datos
+  const db = await fsPromises.readFile("./koders.json", "utf8");
+  const parsedDb = JSON.parse(db);
+
+  // Encontrar indice de koder a actualizar
+  const index = parsedDb.koders.findIndex(koder => koder.id === parseInt(id))
+  console.log("Indice :", index);
+  console.log(`Arreglo en el indice ${index}`, parsedDb.koders[index])
+
+  // Crear nuestro objeto nuevo
+  const updatedKoder = {
+    ...parsedDb.koders[index], // ponme todo lo que ya tengas
+    ...req.body // agregame lo nuevo
+  }
+
+  // Actualizamos con el indice en la base de datos
+  parsedDb.koders[index] = updatedKoder
+
+  // @ts-ignore
+  // Escribimos ya actualiza en nuestra base de datos
+  await fsPromises.writeFile("./koders.json", JSON.stringify(parsedDb, "\n", 4));
+
+  // Response con el koder actualizado
+  res.json(updatedKoder);
+})
+app.listen(8080, () => {
+    console.log("Nuestro servidor esta prendido");
+});
+
+/**
+ * Tarea: Eliminar un koder
  */
