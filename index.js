@@ -20,14 +20,19 @@ app.get("/", (req, res) => {
  */
 
 /**
- * En el lado de backend
+ * - En el lado de backend -
  * Path params -> modifican la ruta agregando :pathParam
  * Query params -> no modifican la ruta
+ * 
+ * - En el lado del cliente(google chrome, insomnia, postman);
+ * Path params -> /recurso/pathParam/recurso/pathParam
+ * Query Params -> /recurso?pathParam=valor 
+ *    ? -> vamos a poner query params
+ *    & -> concatenamos query params
  */
 // List koders
 app.get("/koders", async (req, res) => {
     const { module } = req.query;
-    console.log("req.query", req.query)
     const db = await fsPromises.readFile("./koders.json", "utf8"); // leemos base de datos
     const parsedDB = JSON.parse(db); // parseamos json
     const filteredKoders = parsedDB.koders.filter(koder => module === koder.module)
@@ -57,6 +62,30 @@ app.get("/koders/:name", async (req, res) => {
     res.json(filteredKoder);
 });
 
+// List mentos
+app.get("/mentors", async (req, res) => {
+    const { age } = req.query; 
+    const db = await fsPromises.readFile("./koders.json", "utf8");
+    const parsedDb = JSON.parse(db);
+    const filteredMentors = parsedDb.mentors.filter(mentor => mentor.age === age);
+
+    /**
+     * 1 -> quiere filtrar y encontro filtrado
+     * 2 -> quiere filtrar y no encontro filtrado
+     * 3 -> no quiere filtrar, quiere todos los mentores
+     */
+
+    // Quiere filtrar y el arreglo no esta vacio
+    if(age && filteredMentors.length > 0) {
+        res.json(filteredMentors);
+    // No quiere filtrar
+    } else if(!age) {
+        res.json(parsedDb.mentors);
+    // Quiere filtrar pero pues no enconrtro un mentor
+    } else {
+        res.json({ message: "El mentor no fue encontrado "});
+    }
+})
 app.listen(8080, () => {
     console.log("Nuestro servidor esta prendido");
 });
@@ -65,6 +94,6 @@ app.listen(8080, () => {
 /**
  * Ejercicio
  * 2 endpoints -
- * 1.er Donde me filtren por age los mentores
+ * 1.er Donde me filtren por age los mentores -> []
  * 2.do Donde obtengamos un mentor en especifico con su nombre
  */
