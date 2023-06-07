@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
 const fsPromises = require("fs/promises");
-const { join } = require("path");
+
+
+// Middleware
+app.use(express.json()) // Parsear todo lo que el cliente me manda a JSON
 
 // Endpoint de Home
 app.get("/", (req, res) => {
@@ -51,13 +54,18 @@ app.get("/koders", async (req, res) => {
  * 
  * ?postId=2
  */
-app.get("/koders/:name", async (req, res) => {
+app.get("/koders/:id", async (req, res) => {
     // Path param
-    const { name } = req.params;
+    const { id } = req.params;
+    console.log("tipo de dato de id", typeof id);
     const db = await fsPromises.readFile("./koders.json", "utf8");
     const parsedDb = JSON.parse(db);
+    /**
+     * 1 - Parsear a int
+     * 2 - No utilizar comparacion estricta(===) para que no compare los tipos de datos
+     */
     const filteredKoder = parsedDb.koders.filter(
-        (koder) => koder.name.toLowerCase() === name.toLowerCase()
+        (koder) => koder.id === parseInt(id)
     )[0];
     res.json(filteredKoder);
 });
@@ -67,33 +75,54 @@ app.get("/mentors", async (req, res) => {
     const { age } = req.query; 
     const db = await fsPromises.readFile("./koders.json", "utf8");
     const parsedDb = JSON.parse(db);
+    // Ya tenemos a todos los mentors
+    if(!age) {
+        res.json(parsedDb.mentors)
+        return;
+    }
+    // Continuamos
     const filteredMentors = parsedDb.mentors.filter(mentor => mentor.age === age);
-
-    /**
-     * 1 -> quiere filtrar y encontro filtrado
-     * 2 -> quiere filtrar y no encontro filtrado
-     * 3 -> no quiere filtrar, quiere todos los mentores
-     */
-
-    // Quiere filtrar y el arreglo no esta vacio
-    if(age && filteredMentors.length > 0) {
+    // Si encontro mentors con el query param de age
+    if(filteredMentors.length > 0) {
         res.json(filteredMentors);
-    // No quiere filtrar
-    } else if(!age) {
-        res.json(parsedDb.mentors);
-    // Quiere filtrar pero pues no enconrtro un mentor
+    // Que filtro, pero no encontro ningun mentor
     } else {
         res.json({ message: "El mentor no fue encontrado "});
     }
+})
+
+// Crear un koder -> /koders
+app.post("/koders", async (req, res) => {
+    // Acceso a la base de datos
+    const db = await fsPromises.readFile("./koders.json", "utf8");
+    const parsedDb = JSON.parse(db);
+    // Crear nuestro objeto nuevo
+    const koder = {
+        id: parsedDb.koders.length + 1,
+        ...req.body
+    }
+    // Agregarlo a nuestra ya creada bd
+    parsedDb.koders.push(koder);
+    // @ts-ignore
+    // Agregarlo a la base de datos
+    await fsPromises.writeFile("./koders.json", JSON.stringify(parsedDb, "\n", 4));
+
+    // Response al cliente con nuestro objeto creado,  por si lo llega a necesitar
+    res.json(koder)
 })
 app.listen(8080, () => {
     console.log("Nuestro servidor esta prendido");
 });
 
 
+
 /**
  * Ejercicio
- * 2 endpoints -
- * 1.er Donde me filtren por age los mentores -> []
- * 2.do Donde obtengamos un mentor en especifico con su nombre
+ * 1 endpoint
+ * Quiero actualizar un koder
+ * 
+ * method
+ * ruta
+ * metodos recomendados
+ * -> findIndex, find
  */
